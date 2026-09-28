@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEPZONE - Toko Sepatu</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f5f5f5;color:#222}
+button{cursor:pointer}
+
+header{
+  position:sticky;top:0;z-index:100;
+  background:#111;color:white;
+  padding:14px 5%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-size:25px;font-weight:bold}
+.logo span{color:#ff3b30}
+.cart-btn{
+  border:0;background:#ff3b30;color:white;
+  padding:10px 16px;border-radius:9px;font-weight:bold
+}
+
+.hero{
+  background:linear-gradient(135deg,#111,#333);
+  color:white;text-align:center;padding:55px 20px
+}
+.hero h1{font-size:40px;margin-bottom:10px}
+.hero p{color:#ddd}
+
+.search{
+  background:white;padding:20px 5%;
+}
+.search input{
+  width:100%;max-width:700px;display:block;margin:auto;
+  padding:14px;border:1px solid #ddd;border-radius:10px;
+  font-size:16px
+}
+
+.categories{
+  display:flex;gap:10px;justify-content:center;
+  flex-wrap:wrap;padding:15px 5%
+}
+.categories button{
+  border:0;background:white;padding:10px 18px;
+  border-radius:20px;box-shadow:0 2px 8px #ddd
+}
+.categories button:hover{background:#111;color:white}
+
+.products{
+  padding:20px 5% 50px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:20px
+}
+
+.card{
+  background:white;border-radius:15px;
+  overflow:hidden;box-shadow:0 4px 15px #ddd
+}
+.card-img{height:230px;background:#eee}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:17px}
+.brand{font-size:13px;color:#777}
+.card h3{margin:7px 0}
+.rating{color:#f5a623;margin:7px 0}
+.price{font-size:20px;color:#e53935;font-weight:bold;margin:8px 0}
+.desc{font-size:14px;color:#555;line-height:1.5}
+.card-buttons{display:flex;gap:8px;margin-top:13px}
+.card-buttons button{
+  flex:1;padding:11px;border:0;border-radius:8px;
+  font-weight:bold
+}
+.detail-btn{background:#eee}
+.buy-btn{background:#111;color:white}
+
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.6);z-index:150
+}
+.overlay.active{display:block}
+
+.modal{
+  position:fixed;z-index:160;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:95%;max-width:850px;
+  max-height:90vh;overflow:auto;
+  background:white;border-radius:15px;padding:20px
+}
+.close{
+  float:right;border:0;background:none;
+  font-size:28px
+}
+
+.detail-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:25px;margin-top:20px
+}
+.detail-image{
+  height:350px;background:#eee;border-radius:12px;overflow:hidden
+}
+.detail-image img{
+  width:100%;height:100%;object-fit:cover
+}
+
+.info h2{margin-bottom:8px}
+.spec{
+  background:#f7f7f7;padding:12px;
+  border-radius:10px;margin:15px 0;
+  line-height:1.8;font-size:14px
+}
+
+.sizes{
+  display:flex;gap:8px;flex-wrap:wrap;margin:10px 0
+}
+.size{
+  border:1px solid #ccc;background:white;
+  padding:9px 13px;border-radius:7px
+}
+.size.selected{background:#111;color:white}
+
+.qty{
+  display:flex;align-items:center;gap:12px;
+  margin:15px 0
+}
+.qty button{
+  width:35px;height:35px;border:0;
+  background:#eee;border-radius:7px;font-size:20px
+}
+
+.add{
+  width:100%;padding:13px;
+  border:0;border-radius:9px;
+  background:#ff3b30;color:white;
+  font-weight:bold
+}
+
+/* CART */
+.cart{
+  position:fixed;right:-450px;top:0;
+  width:420px;max-width:95%;
+  height:100vh;background:white;
+  z-index:200;padding:20px;
+  overflow-y:auto;
+  transition:.3s;
+  box-shadow:-5px 0 20px #3333
+}
+.cart.active{right:0}
+
+.cart-head{
+  display:flex;justify-content:space-between;
+  margin-bottom:15px
+}
+.cart-head button{
+  border:0;background:none;font-size:25px
+}
+
+.cart-item{
+  display:flex;gap:10px;
+  border-bottom:1px solid #ddd;
+  padding:12px 0
+}
+.cart-item img{
+  width:75px;height:75px;
+  object-fit:cover;border-radius:8px
+}
+.cart-info{flex:1;font-size:14px}
+.cart-info b{display:block;margin-bottom:5px}
+
+.mini-qty{
+  display:flex;align-items:center;
+  gap:7px;margin-top:7px
+}
+.mini-qty button{
+  border:0;width:25px;height:25px;
+  border-radius:5px
+}
+
+.remove{
+  border:0;background:#e53935;
+  color:white;padding:5px 8px;
+  border-radius:5px;margin-top:6px
+}
+
+.summary{
+  border-top:1px solid #ddd;
+  margin-top:15px;padding-top:15px;
+  line-height:2
+}
+.summary div{
+  display:flex;justify-content:space-between
+}
+.grand{
+  font-size:20px;font-weight:bold;
+  border-top:1px solid #ddd;
+  margin-top:8px;padding-top:8px
+}
+
+.voucher{
+  display:flex;gap:7px;margin:12px 0
+}
+.voucher input{
+  flex:1;padding:10px;
+  border:1px solid #ccc;border-radius:7px
+}
+.voucher button{
+  border:0;background:#111;color:white;
+  padding:10px;border-radius:7px
+}
+
+.checkout{
+  margin-top:20px
+}
+.checkout h3{margin:18px 0 10px}
+.checkout label{
+  display:block;font-size:13px;
+  font-weight:bold;margin-top:9px
+}
+.checkout input,
+.checkout textarea,
+.checkout select{
+  width:100%;padding:11px;
+  border:1px solid #ccc;border-radius:8px;
+  margin-top:5px
+}
+.checkout textarea{height:75px;resize:none}
+
+.pay{
+  width:100%;border:0;
+  background:#20a464;color:white;
+  padding:14px;border-radius:9px;
+  font-weight:bold;margin-top:15px
+}
+
+.review-section{
+  background:white;padding:40px 5%
+}
+.review-section h2{text-align:center;margin-bottom:20px}
+.reviews{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px
+}
+.review{
+  background:#f5f5f5;
+  padding:17px;border-radius:10px;
+  line-height:1.5
+}
+
+footer{
+  background:#111;color:white;
+  text-align:center;padding:30px
+}
+
+@media(max-width:650px){
+  .hero h1{font-size:29px}
+  .detail-grid{grid-template-columns:1fr}
+  .detail-image{height:270px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">STEP<span>ZONE</span></div>
+  <button class="cart-btn" onclick="openCart()">
+    🛒 Keranjang (<span id="cartCount">0</span>)
+  </button>
+</header>
+
+<section class="hero">
+  <h1>STEPZONE SHOES</h1>
+  <p>Sepatu keren, nyaman, dan berkualitas untuk semua aktivitas.</p>
+</section>
+
+<section class="search">
+  <input id="search"
+    oninput="searchProduct()"
+    placeholder="🔍 Cari sepatu, brand, atau model...">
+</section>
+
+<div class="categories">
+  <button onclick="filterType('all')">Semua</button>
+  <button onclick="filterType('Sneakers')">Sneakers</button>
+  <button onclick="filterType('Running')">Running</button>
+  <button onclick="filterType('Formal')">Formal</button>
+  <button onclick="filterType('Football')">Football</button>
+  <button onclick="filterType('Casual')">Casual</button>
+</div>
+
+<section class="products" id="products"></section>
+
+<section class="review-section">
+  <h2>⭐ Review Pelanggan</h2>
+
+  <div class="reviews">
+    <div class="review">
+      <b>Rizky ⭐⭐⭐⭐⭐</b>
+      <p>Sepatunya nyaman dan modelnya keren. Cocok buat sekolah.</p>
+    </div>
+
+    <div class="review">
+      <b>Fahmi ⭐⭐⭐⭐⭐</b>
+      <p>Barang sesuai foto. Kualitasnya juga bagus.</p>
+    </div>
+
+    <div class="review">
+      <b>Andi ⭐⭐⭐⭐</b>
+      <p>Harga terjangkau dan nyaman dipakai sehari-hari.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <h3>STEPZONE</h3>
+  <p>Toko sepatu online pilihanmu.</p>
+  <p style="margin-top:10px">© 2026 STEPZONE</p>
+</footer>
+
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+
+<!-- DETAIL PRODUK -->
+<div class="modal" id="detailModal" style="display:none">
+  <button class="close" onclick="closeDetail()">×</button>
+  <div id="detailContent"></div>
+</div>
+
+<!-- KERANJANG -->
+<div class="cart" id="cart">
+
+  <div class="cart-head">
+    <h2>🛒 Keranjang</h2>
+    <button onclick="closeCart()">×</button>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <div class="voucher">
+    <input id="voucher" placeholder="Kode voucher">
+    <button onclick="applyVoucher()">Pakai</button>
+  </div>
+
+  <div class="summary">
+
+    <div>
+      <span>Subtotal</span>
+      <span id="subtotal">Rp0</span>
+    </div>
+
+    <div>
+      <span>Diskon</span>
+      <span id="discount">Rp0</span>
+    </div>
+
+    <div>
+      <span>Ongkir</span>
+      <span id="shipping">Rp0</span>
+    </div>
+
+    <div class="grand">
+      <span>Total</span>
+      <span id="total">Rp0</span>
+    </div>
+
+  </div>
+
+  <div class="checkout">
+
+    <h3>📦 Alamat Tujuan</h3>
+
+    <label>Nama Penerima</label>
+    <input id="name" placeholder="Nama lengkap">
+
+    <label>No. WhatsApp</label>
+    <input id="phone" placeholder="08xxxxxxxxxx">
+
+    <label>Alamat Lengkap</label>
+    <textarea id="address"
+      placeholder="Jalan, nomor rumah, RT/RW, kelurahan..."></textarea>
+
+    <label>Kota / Kabupaten</label>
+    <input id="city" placeholder="Contoh: Jakarta Selatan">
+
+    <label>Kode Pos</label>
+    <input id="postal" placeholder="12345">
+
+    <h3>🚚 Pengiriman</h3>
+
+    <select id="courier" onchange="updateCart()">
+      <option value="15000">JNE - Rp15.000</option>
+      <option value="12000">J&T - Rp12.000</option>
+      <option value="14000">SiCepat - Rp14.000</option>
+      <option value="10000">AnterAja - Rp10.000</option>
+    </select>
+
+    <h3>💳 Metode Pembayaran</h3>
+
+    <select id="payment">
+      <option value="">-- Pilih Pembayaran --</option>
+      <option>COD - Bayar di Tempat</option>
+      <option>QRIS</option>
+      <option>DANA</option>
+      <option>GoPay</option>
+      <option>ShopeePay</option>
+      <option>OVO</option>
+      <option>Transfer BCA</option>
+      <option>Transfer BRI</option>
+      <option>Transfer BNI</option>
+      <option>Transfer Mandiri</option>
+    </select>
+
+    <button class="pay" onclick="checkout()">
+      💰 Buat Pesanan
+    </button>
+
+  </div>
+</div>
+
+<script>
+
+const products = [
+
+{
+ id:1,
+ brand:"STEPZONE",
+ name:"Urban Street Sneakers",
+ type:"Sneakers",
+ price:199000,
+ rating:4.8,
+ image:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+ material:"Synthetic Leather + Rubber",
+ quality:"★★★★☆",
+ description:"Sneakers casual untuk sekolah, nongkrong, jalan-jalan, dan aktivitas sehari-hari.",
+ review:"Nyaman dan desainnya keren."
+},
+
+{
+ id:2,
+ brand:"RUNFAST",
+ name:"Runner Pro",
+ type:"Running",
+ price:299000,
+ rating:4.9,
+ image:"https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80",
+ material:"Mesh + EVA Foam + Rubber",
+ quality:"★★★★★",
+ description:"Sepatu running ringan dengan sirkulasi udara yang baik dan bantalan nyaman.",
+ review:"Ringan dipakai olahraga."
+},
+
+{
+ id:3,
+ brand:"FORMALX",
+ name:"Classic Leather",
+ type:"Formal",
+ price:349000,
+ rating:4.7,
+ image:"https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80",
+ material:"Synthetic Leather",
+ quality:"★★★★☆",
+ description:"Sepatu formal dengan desain klasik untuk acara resmi dan kegiatan sekolah.",
+ review:"Terlihat rapi dan nyaman."
+},
+
+{
+ id:4,
+ brand:"FOOTBALL PRO",
+ name:"Speed Ground",
+ type:"Football",
+ price:429000,
+ rating:4.8,
+ image:"https://images.unsplash.com/photo-1511886929837-354d827aae26?auto=format&fit=crop&w=800&q=80",
+ material:"Synthetic + TPU",
+ quality:"★★★★★",
+ description:"Sepatu sepak bola dengan outsole yang membantu memberikan grip.",
+ review:"Grip bagus dan terasa ringan."
+},
+
+{
+ id:5,
+ brand:"CASUALONE",
+ name:"Daily Canvas",
+ type:"Casual",
+ price:179000,
+ rating:4.6,
+ image:"https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&q=80",
+ material:"Canvas + Rubber",
+ quality:"★★★★☆",
+ description:"Sepatu casual sederhana untuk digunakan setiap hari.",
+ review:"Harga murah dan model bagus."
+},
+
+{
+ id:6,
+ brand:"STEPZONE",
+ name:"Sport Max",
+ type:"Sneakers",
+ price:549000,
+ rating:4.9,
+ image:"https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=800&q=80",
+ material:"Mesh + Synthetic + Rubber",
+ quality:"★★★★★",
+ description:"Sneakers sporty dengan bantalan nyaman untuk berbagai aktivitas.",
+ review:"Kualitas terasa premium."
+}
+
+];
+
+let cart=[];
+let selectedSize=42;
+let currentType="all";
+let discount=0;
+
+function rupiah(num){
+ return new Intl.NumberFormat("id-ID",{
+  style:"currency",
+  currency:"IDR",
+  maximumFractionDigits:0
+ }).format(num);
+}
+
+function renderProducts(data=products){
+
+ const box=document.getElementById("products");
+ box.innerHTML="";
+
+ data.forEach(p=>{
+
+  box.innerHTML+=`
+
+  <div class="card">
+
+    <div class="card-img">
+      <img src="${p.image}">
+    </div>
+
+    <div class="card-body">
+
+      <div class="brand">${p.brand} • ${p.type}</div>
+
+      <h3>${p.name}</h3>
+
+      <div class="rating">⭐ ${p.rating}/5</div>
+
+      <div class="price">${rupiah(p.price)}</div>
+
+      <p class="desc">${p.description}</p>
+
+      <div class="card-buttons">
+
+        <button class="detail-btn"
+          onclick="showDetail(${p.id})">
+          Detail
+        </button>
+
+        <button class="buy-btn"
+          onclick="quickBuy(${p.id})">
+          Beli
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  `;
+
+ });
+
+}
+
+function showDetail(id){
+
+ const p=products.find(x=>x.id===id);
+
+ document.getElementById("detailContent").innerHTML=`
+
+ <div class="detail-grid">
+
+   <div class="detail-image">
+     <img src="${p.image}">
+   </div>
+
+   <div class="info">
+
+     <div class="brand">${p.brand} • ${p.type}</div>
+
+     <h2>${p.name}</h2>
+
+     <div class="rating">
+       ⭐ ${p.rating}/5
+     </div>
+
+     <div class="price">
+       ${rupiah(p.price)}
+     </div>
+
+     <p>${p.description}</p>
+
+     <div class="spec">
+       <b>Kualitas:</b> ${p.quality}<br>
+       <b>Bahan:</b> ${p.material}<br>
+       <b>Review:</b> "${p.review}"<br>
+       <b>Cocok untuk:</b> Sekolah, casual, aktivitas harian
+     </div>
+
+     <b>Pilih Ukuran:</b>
+
+     <div class="sizes">
+
+       ${[38,39,40,41,42,43,44,45].map(size=>`
+         <button
+           class="size ${size===42?'selected':''}"
+           onclick="selectSize(this,${size})">
+           ${size}
+         </button>
+       `).join("")}
+
+     </div>
+
+     <div class="qty">
+
+       <b>Jumlah:</b>
+
+       <button onclick="changeDetailQty(-1)">−</button>
+
+       <span id="detailQty">1</span>
+
+       <button onclick="changeDetailQty(1)">+</button>
+
+     </div>
+
+     <button class="add"
+       onclick="addDetailToCart(${p.id})">
+       🛒 Tambahkan ke Keranjang
+     </button>
+
+   </div>
+
+ </div>
+ `;
+
+ window.detailQty=1;
+
+ document.getElementById("detailModal").style.display="block";
+ document.getElementById("overlay").classList.add("active");
+}
+
+function selectSize(btn,size){
+
+ document.querySelectorAll(".size")
+   .forEach(x=>x.classList.remove("selected"));
+
+ btn.classList.add("selected");
+
+ selectedSize=size;
+}
+
+function changeDetailQty(value){
+
+ window.detailQty=Math.max(
+  1,
+  (window.detailQty||1)+value
+ );
+
+ document.getElementById("detailQty")
+  .textContent=window.detailQty;
+}
+
+function addDetailToCart(id){
+
+ const p=products.find(x=>x.id===id);
+
+ const existing=cart.find(
+  x=>x.id===id && x.size===selectedSize
+ );
+
+ if(existing){
+  existing.qty+=window.detailQty;
+ }else{
+  cart.push({
+   ...p,
+   size:selectedSize,
+   qty:window.detailQty
+  });
+ }
+
+ updateCart();
+ closeDetail();
+ openCart();
+}
+
+function quickBuy(id){
+
+ selectedSize=42;
+ window.detailQty=1;
+
+ showDetail(id);
+}
+
+function removeItem(index){
+
+ cart.splice(index,1);
+ updateCart();
+}
+
+function changeQty(index,value){
+
+ cart[index].qty+=value;
+
+ if(cart[index].qty<=0){
+  cart.splice(index,1);
+ }
+
+ updateCart();
+}
+
+function applyVoucher(){
+
+ const code=document.getElementById("voucher")
+  .value.trim().toUpperCase();
+
+ if(code==="STEPZONE10"){
+
+  discount=10000;
+
+  alert("Voucher berhasil! Diskon Rp10.000");
+
+ }else{
+
+  discount=0;
+
+  alert("Kode voucher tidak valid.");
+
+ }
+
+ updateCart();
+}
+
+function updateCart(){
+
+ const box=document.getElementById("cartItems");
+
+ box.innerHTML="";
+
+ let subtotal=0;
+ let count=0;
+
+ cart.forEach((item,index)=>{
+
+  subtotal+=item.price*item.qty;
+  count+=item.qty;
+
+  box.innerHTML+=`
+
+  <div class="cart-item">
+
+    <img src="${item.image}">
+
+    <div class="cart-info">
+
+      <b>${item.name}</b>
+
+      <span>Ukuran: ${item.size}</span>
+
+      <div>${rupiah(item.price)}</div>
+
+      <div class="mini-qty">
+
+        <button onclick="changeQty(${index},-1)">−</button>
+
+        <span>${item.qty}</span>
+
+        <button onclick="changeQty(${index},1)">+</button>
+
+      </div>
+
+      <button class="remove"
+        onclick="removeItem(${index})">
+        Hapus
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+ });
+
+ if(cart.length===0){
+
+  box.innerHTML=`
+   <p style="text-align:center;padding:30px">
+   Keranjang masih kosong.
+   </p>
+  `;
+
+ }
+
+ const courier=
+  Number(document.getElementById("courier")?.value||15000);
+
+ const shipping=cart.length>0?courier:0;
+
+ const total=Math.max(
+  0,
+  subtotal-discount+shipping
+ );
+
+ document.getElementById("cartCount")
+  .textContent=count;
+
+ document.getElementById("subtotal")
+  .textContent=rupiah(subtotal);
+
+ document.getElementById("discount")
+  .textContent="-"+rupiah(discount);
+
+ document.getElementById("shipping")
+  .textContent=rupiah(shipping);
+
+ document.getElementById("total")
+  .textContent=rupiah(total);
+}
+
+function openCart(){
+ document.getElementById("cart")
+  .classList.add("active");
+}
+
+function closeCart(){
+ document.getElementById("cart")
+  .classList.remove("active");
+}
+
+function closeDetail(){
+
+ document.getElementById("detailModal")
+  .style.display="none";
+
+ document.getElementById("overlay")
+  .classList.remove("active");
+}
+
+function searchProduct(){
+
+ const key=document.getElementById("search")
+  .value.toLowerCase();
+
+ const result=products.filter(p=>{
+
+  const text=
+   (p.name+" "+p.brand+" "+p.type)
+   .toLowerCase();
+
+  return text.includes(key) &&
+   (currentType==="all" || p.type===currentType);
+
+ });
+
+ renderProducts(result);
+}
+
+function filterType(type){
+
+ currentType=type;
+ searchProduct();
+
+}
+
+function checkout(){
+
+ if(cart.length===0){
+  alert("Keranjang masih kosong!");
+  return;
+ }
+
+ const name=document.getElementById("name").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const address=document.getElementById("address").value.trim();
+ const city=document.getElementById("city").value.trim();
+ const postal=document.getElementById("postal").value.trim();
+ const payment=document.getElementById("payment").value;
+
+ if(!name||!phone||!address||!city||!postal||!payment){
+
+  alert("Mohon lengkapi semua data checkout.");
+  return;
+
+ }
+
+ let subtotal=0;
+
+ cart.forEach(item=>{
+  subtotal+=item.price*item.qty;
+ });
+
+ const shipping=
+  Number(document.getElementById("courier").value);
+
+ const total=
+  Math.max(0,subtotal-discount+shipping);
+
+ let order="";
+
+ cart.forEach(item=>{
+  order+=
+   `${item.name} | Ukuran ${item.size} | ${item.qty} pcs\n`;
+ });
+
+ alert(
+  "✅ PESANAN BERHASIL DIBUAT!\n\n"+
+  "Nama: "+name+"\n"+
+  "WhatsApp: "+phone+"\n"+
+  "Alamat: "+address+"\n"+
+  "Kota: "+city+"\n"+
+  "Kode Pos: "+postal+"\n\n"+
+  "Produk:\n"+order+
+  "\nPembayaran: "+payment+
+  "\nTotal: "+rupiah(total)+
+  "\n\nTerima kasih telah berbelanja di STEPZONE!"
+ );
+
+ cart=[];
+ discount=0;
+
+ updateCart();
+
+}
+
+renderProducts();
+updateCart();
+
+</script>
+
+</body>
+</html>
